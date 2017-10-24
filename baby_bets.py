@@ -13,17 +13,19 @@ JINJA_ENVIRONMENT = jinja2.Environment(
 
 DUE_DATE = "11-19-2017"
 CUT_OFF_DATE = "11-01-2017"
+BASE_URL = "https://Ianni-baby-2.appspot.com"
 
 class Bet(ndb.Model):
-    name = ndb.StringProperty()
-    email = ndb.StringProperty()
-    date = ndb.StringProperty()
-    gender = ndb.StringProperty()
-    hair_color = ndb.StringProperty()
-    length = ndb.IntegerProperty()
+    name = ndb.StringProperty(required=True)
+    email = ndb.StringProperty(required=True)
+    date = ndb.StringProperty(required=True)
+    gender = ndb.StringProperty(required=True)
+    hair_color = ndb.StringProperty(required=True)
+    length = ndb.IntegerProperty(required=True)
 
 class MainPage(webapp2.RequestHanlder):
-    pass
+    def get(self):
+        self.response.write("Hello")
 
 class BetHandler(webapp2.RequestHanlder):
     pass

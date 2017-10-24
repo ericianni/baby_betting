@@ -10,3 +10,7 @@ Features
    1. Input actual measurements
    2. Automatically email everyone about the winner
    3. Score breakdown page
+
+Stretch Features
+======
+1. Paypal intergration
