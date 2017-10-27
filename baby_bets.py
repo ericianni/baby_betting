@@ -18,6 +18,7 @@ JINJA_ENVIRONMENT = jinja2.Environment(
 DUE_DATE = "2017-11-19"
 CUT_OFF_DATE = "2017-11-01"
 BASE_URL = "https://Ianni-baby-2.appspot.com"
+ADMIN_EMAIL = "admin@admin.com"
 
 class User(ndb.Model):
     name = ndb.StringProperty(required=True)
@@ -237,7 +238,11 @@ class BetHandler(webapp2.RequestHandler):
 
 class ResultHandler(webapp2.RequestHandler):
     def get(self):
-        self.response.write("Results")
+        admin_query = User.query(User.email==ADMIN_EMAIL)
+        if admin_query.count() > 0:
+            self.response.write("Admin exists")
+        else:
+            self.response.write("Admin DOES NOT exist")
 
     def calc_score(self, user_date, actual_data):
         date_multiplier = 65
