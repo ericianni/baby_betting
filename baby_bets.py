@@ -15,8 +15,8 @@ JINJA_ENVIRONMENT = jinja2.Environment(
     extensions=['jinja2.ext.autoescape'],
     autoescape=True)
 
-DUE_DATE = "11/19/2017"
-CUT_OFF_DATE = "11/01/2017"
+DUE_DATE = "2017-11-19"
+CUT_OFF_DATE = "2017-11-01"
 BASE_URL = "https://Ianni-baby-2.appspot.com"
 
 class User(ndb.Model):
@@ -278,8 +278,8 @@ class ResultHandler(webapp2.RequestHandler):
         return results
 
     def get_day_diff(self, date0, time0, date1, time1):
-        day0 = datetime.datetime.strptime(date0, '%m/%d/%Y')
-        day1 = datetime.datetime.strptime(date1, '%m/%d/%Y')
+        day0 = datetime.datetime.strptime(date0, '%Y-%m-%d')
+        day1 = datetime.datetime.strptime(date1, '%Y-%m-%d')
         h0, m0 = time0.split(':')
         partial_day0 = (int(h0) * 60 + int(m0)) / 1440.0
         h1, m1 = time0.split(':')

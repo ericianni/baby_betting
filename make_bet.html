@@ -1,22 +1,17 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <title>{{title}}</title>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+<title>{{title}}</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
 
 
   
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
-  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
-
-  <!-- Bootstrap Datepicker Plugin -->
-  <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.4.1/js/bootstrap-datepicker.min.js"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.4.1/css/bootstrap-datepicker3.css"/>
-  <!-- Bootstrap Timepicker Plugin -->
-  <style>
-    /* Remove the navbar's default margin-bottom and rounded borders */ 
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+<style>
+/* Remove the navbar's default margin-bottom and rounded borders */ 
     .navbar {
       margin-bottom: 0;
       border-radius: 0;
@@ -107,12 +102,14 @@
 		    {% endif %}
 		    ">
 	  <label class="control-label" for="date">Date</label>
-	  <input class="form-control" id="date" name="date"  type="text"
+	  <input class="form-control" id="date" name="date"
+	  type="date"
 	  {% if date %}
 	  value="{{date}}"
 	  {% else %}
 	  value="{{due_date}}"
-	  {% endif %}/>
+	  {% endif %}
+	  />
 	  {% if date_error %}
 	  <span class="help-block">{{date_error}}</span>
 	  {% endif %}
@@ -240,7 +237,7 @@
 		    {% endif %}
 		    ">
 	  <label for="ounces">Ounces:</label>
-	  <input name="ounces" type="number" max="16" class="form-control" id="ounces" 
+	  <input name="ounces" type="number" class="form-control" id="ounces" 
 		 {% if ounces %}
 		 value="{{ounces}}"
 		 {% endif %}
@@ -257,19 +254,6 @@
       <h1>Want to make a bet?</h1>
       <p>If you already have an account please sign in. If not, please create an account before proceeding.</p>
       {% endif %}
-      <script>
-	$(document).ready(function(){
-	var date_input=$('input[name="date"]'); //our date input has the name "date"
-	var container=$('.bootstrap-iso form').length>0 ? $('.bootstrap-iso form').parent() : "body";
-	var options={
-        format: 'mm/dd/yyyy',
-        container: container,
-        todayHighlight: true,
-        autoclose: true,
-	};
-	date_input.datepicker(options);
-	})
-      </script>
     </div>
     <div class="col-sm-2 sidenav">
       <!-- <div class="well"> -->
