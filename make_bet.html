@@ -90,7 +90,11 @@
       </div>
       {% endif %}
       {% if user %}
+      {% if has_prev_bet %}
+      <h1>Do you want to update your bet {{user}}?</h1>
+      {% else %}
       <h1>Time to make your bet {{user}}!</h1>
+      {% endif %}
       <form role="form" action="/bet" method="post">
 	{% if bet_error %}
 	<div class="alert alert-danger">
@@ -116,7 +120,7 @@
 		    has-error
 		    {% endif %}
 		    ">
-	  <label class="control-label" for="time">Time (24-Hour Format)</label>
+	  <label class="control-label" for="time">Time</label>
 	  <input class="form-control" id="time" name="time" type="time"
 		 {% if time %}
 		 value="{{time}}"

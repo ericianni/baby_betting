@@ -28,8 +28,8 @@ class User(ndb.Model):
     gender = ndb.StringProperty()
     hair_color = ndb.StringProperty()
     length = ndb.IntegerProperty()
-    pounds = ndb.IntegerProperty
-    ounces = ndb.IntegerProperty
+    pounds = ndb.IntegerProperty()
+    ounces = ndb.IntegerProperty()
     
 class MainPage(webapp2.RequestHandler):
     def get(self):
@@ -60,15 +60,21 @@ class BetHandler(webapp2.RequestHandler):
         bet_error = session.get('bet_error', None)
         bet_success = session.get('bet_success', None)
         new_bet = session.get('new_bet', None)
+        date_error = session.get('date_error', None)
+        time_error = session.get('time_error', None)
+        gender_error = session.get('gender_error', None)
+        hair_error = session.get('hair_error', None)
+        length_error = session.get('length_error', None)
+        pound_error = session.get('pound_error', None)
+        ounce_error = session.get('ounce_error', None)
 
-        # Variables to populate the form if a previous  bet exists
-        date = None
-        time = None
-        gender = None
-        hair = None
-        length = None
-        pounds = None
-        ounces = None
+        date = session.get('date', None)
+        time = session.get('time', None)
+        gender = session.get('gender', None)
+        hair = session.get('hair', None)
+        length = session.get('length', None)
+        pounds = session.get('pounds', None)
+        ounces = session.get('ounces', None)
 
         template = JINJA_ENVIRONMENT.get_template('make_bet.html')
         title = "Ianni Baby 2.0 - Make Your Bet"
@@ -83,6 +89,7 @@ class BetHandler(webapp2.RequestHandler):
                 time = cur_user.time
                 gender = cur_user.gender
                 hair = cur_user.hair_color
+                length = cur_user.length
                 pounds = cur_user.pounds
                 ounces = cur_user.ounces
             else:
@@ -98,12 +105,20 @@ class BetHandler(webapp2.RequestHandler):
             'has_prev_bet':has_prev_bet,
             'bet_error':bet_error,
             'bet_success':bet_success,
-            'date':cur_user.date,
-            'time':cur_user.time,
-            'gender':cur_user.gender,
-            'hair':cur_user.hair_color,
-            'pounds':cur_user.pounds,
-            'ounces':cur_user.ounces,
+            'date':date,
+            'time':time,
+            'gender':gender,
+            'hair':hair,
+            'length':length,
+            'pounds':pounds,
+            'ounces':ounces,
+            'date_error':date_error,
+            'time_error':time_error,
+            'gender_error':gender_error,
+            'hair_error':hair_error,
+            'length_error':length_error,
+            'pound_error':pound_error,
+            'ounce_error':ounce_error,
         }
 
         # Clean-up
@@ -111,7 +126,36 @@ class BetHandler(webapp2.RequestHandler):
             del session['bet_error']
         if bet_success:
             del session['bet_success']
-        
+        if new_bet:
+            del session['new_bet']
+        if date_error:
+            del session['date_error']
+        if time_error:
+            del session['time_error']
+        if gender_error:
+            del session['gender_error']
+        if hair_error:
+            del session['hair_error']
+        if length_error:
+            del session['length_error']
+        if pound_error:
+            del session['pound_error']
+        if ounce_error:
+            del session['ounce_error']
+        if session.has_key('date'):
+            del session['date']
+        if session.has_key('time'):
+            del session['time']
+        if session.has_key('gender'):
+            del session['gender']
+        if session.has_key('hair'):
+            del session['hair']
+        if session.has_key('length'):
+            del session['length']
+        if session.has_key('pounds'):
+            del session['pounds']
+        if session.has_key('ounces'):
+            del session['ounces']
         self.response.write(template.render(template_values))
 
     def post(self):
@@ -130,12 +174,50 @@ class BetHandler(webapp2.RequestHandler):
         if not email:
             self.redirect('/')
         else:
+            if not date:
+                session['date_error'] = "You must enter a date"
+                valid = False
+            else:
+                session['date'] = date
+            if not time:
+                session['time_error'] = "You must enter a time"
+                valid = False
+            else:
+                session['time'] = time
+            if not gender:
+                session['gender_error'] = "You must enter a gender"
+                valid = False
+            else:
+                session['gender'] = gender
+            if not hair_color:
+                session['hair_error'] = "You must enter a hair color"
+                valid = False
+            else:
+                session['hair'] = hair_color
+            if not length:
+                session['length_error'] = "You must enter a length"
+                valid = False
+            else:
+                session['length'] = length
+            if not pounds:
+                session['pound_error'] = "You must enter pounds"
+                valid = False
+            else:
+                session['pounds'] = pounds
+            if not ounces:
+                session['ounce_error'] = "You must enter ounces"
+                valid = False
+            else:
+                session['ounces'] = ounces
+                
 
             # Get current user's db entry
             user_query = User.query(User.email == email)
             if user_query.count() != 1:
                 session['bet_error'] = "Error with retrieving User's profile"
                 valid = False
+            if not valid:
+                self.redirect('/bet')
             else:
                 cur_user = user_query.get()
                 cur_user.date = date
@@ -149,7 +231,7 @@ class BetHandler(webapp2.RequestHandler):
                 session['bet_success'] = True
                 session['new_bet'] = cur_user
                 
-            self.redirect('/bet')
+                self.redirect('/bet')
             
 
 class ResultHandler(webapp2.RequestHandler):
@@ -257,7 +339,6 @@ class AccountHandler(webapp2.RequestHandler):
             'logged_in':logged_in,
             'create_error':create_error
         }
-        self.response.write(template.render(template_values))
         if session.has_key('name'):
             del session['name']
         if session.has_key('email'):
@@ -270,6 +351,8 @@ class AccountHandler(webapp2.RequestHandler):
             del session['pwd_error']
         if session.has_key('create_error'):
             del session['create_error']
+        self.response.write(template.render(template_values))
+
 
     def post(self):
         session = get_current_session()
