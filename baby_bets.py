@@ -15,8 +15,8 @@ JINJA_ENVIRONMENT = jinja2.Environment(
     extensions=['jinja2.ext.autoescape'],
     autoescape=True)
 
-DUE_DATE = "11-19-2017"
-CUT_OFF_DATE = "11-01-2017"
+DUE_DATE = "11/19/2017"
+CUT_OFF_DATE = "11/01/2017"
 BASE_URL = "https://Ianni-baby-2.appspot.com"
 
 class User(ndb.Model):
@@ -27,7 +27,7 @@ class User(ndb.Model):
     time = ndb.StringProperty()
     gender = ndb.StringProperty()
     hair_color = ndb.StringProperty()
-    length = ndb.IntegerProperty()
+    length = ndb.FloatProperty()
     pounds = ndb.IntegerProperty()
     ounces = ndb.IntegerProperty()
     
@@ -83,7 +83,7 @@ class BetHandler(webapp2.RequestHandler):
             # Check to see if the user has already made a bet
             user_query = User.query(User.email==email)
             cur_user = user_query.get()
-            if cur_user.date:
+            if cur_user.date and not new_bet:
                 has_prev_bet = True
                 date = cur_user.date
                 time = cur_user.time
@@ -99,6 +99,7 @@ class BetHandler(webapp2.RequestHandler):
             has_prev_bet = False
 
         template_values = {
+            'due_date':DUE_DATE,
             'user':user,
             'title':title,
             'logged_in':logged_in,
@@ -224,7 +225,7 @@ class BetHandler(webapp2.RequestHandler):
                 cur_user.time = time
                 cur_user.gender = gender
                 cur_user.hair_color = hair_color
-                cur_user.length = int(length)
+                cur_user.length = float(length)
                 cur_user.pounds = int(pounds)
                 cur_user.ounces = int(ounces)
                 cur_user.put()
@@ -237,6 +238,58 @@ class BetHandler(webapp2.RequestHandler):
 class ResultHandler(webapp2.RequestHandler):
     def get(self):
         self.response.write("Results")
+
+    def calc_score(self, user_date, actual_data):
+        date_multiplier = 65
+        gender_multiplier = 20
+        hair_multiplier = 5
+        length_multiplier = 5
+        weight_multiplier = 5
+        # Break score down by section
+        results = {}
+        # Date + Time = 65
+        days_off = get_day_diff(user_data.date, user_data.time, actual_data.date, actual_data.time)
+        if days_off > 14:
+            results['date'] = 0.0
+        else:
+            results['date'] = (1.0 - days_off / 14.0) * date_multiplier 
+        # Gender = 25
+        if user_data.gender == actual_data.gender:
+            results['gender'] = gender_multiplier
+        else:
+            results['gender'] = 0.0
+        # Hair = 5
+        if user_data.hair_color == actual_data.hair_color:
+            results['hair'] = hair_multiplier
+        else:
+            results['hair'] = 0.0
+        # Length = 5
+        length_off = abs(user_data.length - actual_data.length)
+        if length_off > 3.0:
+            results['length'] = 0.0
+        else:
+            resutls['length'] = (1.0 - length_off / 3.0) * length_multipler
+        # Weight = 5
+        weight_off = get_weight_diff(user_data.pounds, user_data.ounces, actual_data.pounds, actual_data.ounces)
+        if weight_off > 48.0:
+            results['weight'] = 0.0
+        else:
+            resutls['weight'] = (1.0 - weight_off / 3.0) * weight_multipler
+        return results
+
+    def get_day_diff(self, date0, time0, date1, time1):
+        day0 = datetime.datetime.strptime(date0, '%m/%d/%Y')
+        day1 = datetime.datetime.strptime(date1, '%m/%d/%Y')
+        h0, m0 = time0.split(':')
+        partial_day0 = (int(h0) * 60 + int(m0)) / 1440.0
+        h1, m1 = time0.split(':')
+        partial_day1 = (int(h1) * 60 + int(m1)) / 1440.0
+        return abs(day0 - day1).days + abs(partial_day0 - partial_day1)
+
+    def get_weight_diff(self, pounds0, ounces0, pounds1, ounces1):
+        weight0 = pounds0 * 16 + ounces
+        weight1 = pounds1 * 16 + ounces
+        return abs(weight0 - weight1)
 
 class FAQHandler(webapp2.RequestHandler):
     def get(self):
@@ -407,6 +460,7 @@ class AccountHandler(webapp2.RequestHandler):
                 del session['email']
             self.redirect('/login')
 
+            
 allowed_methods = webapp2.WSGIApplication.allowed_methods
 new_allowed_methods = allowed_methods.union(('PATCH',))
 webapp2.WSGIApplication.allowed_methods = new_allowed_methods
