@@ -14,3 +14,4 @@ Features
 Stretch Features
 ======
 1. Paypal intergration
+2. Forgot password

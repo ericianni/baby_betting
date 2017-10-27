@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>{{title}}</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+
+
+  
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+
+  <!-- Bootstrap Datepicker Plugin -->
+  <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.4.1/js/bootstrap-datepicker.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.4.1/css/bootstrap-datepicker3.css"/>
+  <!-- Bootstrap Timepicker Plugin -->
+  <style>
+    /* Remove the navbar's default margin-bottom and rounded borders */ 
+    .navbar {
+      margin-bottom: 0;
+      border-radius: 0;
+    }
+    
+    /* Set height of the grid so .sidenav can be 100% (adjust as needed) */
+    .row.content {height: 450px}
+    
+    /* Set gray background color and 100% height */
+    .sidenav {
+      padding-top: 20px;
+      background-color: #f1f1f1;
+      height: 100%;
+    }
+    
+    /* Set black background color, white text and some padding */
+    footer {
+      background-color: #555;
+      color: white;
+      padding: 15px;
+    }
+    
+    /* On small screens, set height to 'auto' for sidenav and grid */
+    @media screen and (max-width: 767px) {
+      .sidenav {
+        height: auto;
+        padding: 15px;
+      }
+      .row.content {height:auto;} 
+    }
+  </style>
+</head>
+<body>
+
+<nav class="navbar navbar-inverse">
+  <div class="container-fluid">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#myNavbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>                        
+      </button>
+      <a class="navbar-brand" href="/">Logo</a>
+    </div>
+    <div class="collapse navbar-collapse" id="myNavbar">
+      <ul class="nav navbar-nav">
+        <li><a href="/">Home</a></li>
+        <li class="active"><a href="/bet">Make Bet</a></li>
+        <li><a href="/results">Bet Results</a></li>
+        <li><a href="/faq">How It Works</a></li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+	{% if logged_in %}
+        <li><a href="/logout"><span class="glyphicon glyphicon-log-in"></span> Logout</a></li>
+	{% else %}
+	<li><a href="/login"><span class="glyphicon glyphicon-log-in"></span> Login</a></li>
+	{% endif %}
+      </ul>
+    </div>
+  </div>
+</nav>
+  
+<div class="container-fluid text-center">    
+  <div class="row content">
+    <div class="col-sm-2 sidenav">
+    </div>
+    <div class="col-sm-8 text-left">
+      {% if bet_success %}
+      <div class="alert alert-success">
+	Bet successfully made!
+      </div>
+      {% endif %}
+      {% if user %}
+      <h1>Time to make your bet {{user}}!</h1>
+      <form role="form" action="/bet" method="post">
+	{% if bet_error %}
+	<div class="alert alert-danger">
+	  {{bet_error}}
+	</div>
+	{% endif %}
+	<div class="form-group 
+		    {% if date_error %}
+		    has-error
+		    {% endif %}
+		    ">
+	  <label class="control-label" for="date">Date</label>
+	  <input class="form-control" id="date" name="date" placeholder="MM/DD/YYY" type="text"
+		 {% if date %}
+		 value="{{date}}"
+		 {% endif %}/>
+	  {% if date_error %}
+	  <span class="help-block">{{date_error}}</span>
+	  {% endif %}
+	</div>
+	<div class="form-group 
+		    {% if time_error %}
+		    has-error
+		    {% endif %}
+		    ">
+	  <label class="control-label" for="time">Time (24-Hour Format)</label>
+	  <input class="form-control" id="time" name="time" type="time"
+		 {% if time %}
+		 value="{{time}}"
+		 {% endif %}/>
+	  <!-- <label class="radio-inline"><input type="radio" name="am_pm">AM</label> -->
+	  <!-- <label class="radio-inline"><input type="radio" name="am_pm">PM</label> -->
+	  {% if time_error %}
+	  <span class="help-block">{{time_error}}</span>
+	  {% endif %}
+	  
+	</div>
+	<div class="form-group 
+	  {% if gender_error %}
+	  has-error
+	  {% endif %}
+	  ">
+	  <label for="gender">Gender:</label>
+	  {% if gender %}
+	  <select id="gender" name="gender" class="form-control">
+	    <option value="1"
+		    {% if gender == "1" %}
+		    selected
+		    {% endif %}
+		    >Male</option>
+	    <option value="2"
+		    {% if gender == "2" %}
+		    selected
+		    {% endif %}
+		    >Female</option>
+	  </select>
+	  {% else %}
+	  <select id="gender" name="gender" class="form-control">
+		  <option value="1">Male</option>
+		  <option value="2">Female</option>
+	  </select>
+	  {% endif %}
+	  {% if gender_error %}
+	  <span class="help-block">{{gender_error}}</span>
+	  {% endif %}
+	</div>
+	<div class="form-group 
+	  {% if hair_error %}
+	  has-error
+	  {% endif %}
+	  ">
+	  <label for="hair">Hair Color:</label>
+	  {% if hair %}
+	  <select id="hair" name="hair" class="form-control">
+	    <option value="red"
+		    {% if hair == "red" %}
+		    selected
+		    {% endif %}
+		    >Red</option>
+	    <option value="blonde"
+		    {% if hair == "blonde" %}
+		    selected
+		    {% endif %}
+		    >Blonde</option>
+	    <option value="brown"
+		    {% if hair == "brown" %}
+		    selected
+		    {% endif %}
+		    >Brown</option>
+	    <option value="black"
+		    {% if hair == "black" %}
+		    selected
+		    {% endif %}
+		    >Black</option>
+	  </select>
+	  {% else %}
+	  <select id="hair" name="hair" class="form-control">
+	    <option value="red">Red</option>
+	    <option value="blonde">Blonde</option>
+	    <option value="brown">Brown</option>
+	    <option value="black">Black</option>
+	  </select>
+	  {% endif %}
+	  {% if hair_error %}
+	  <span class="help-block">{{hair_error}}</span>
+	  {% endif %}
+	</div>
+	<div class="form-group 
+	  {% if length_error %}
+	  has-error
+	  {% endif %}
+	  ">
+	  <label for="length">Length in inches:</label>
+	  <input name="length" type="number" class="form-control" id="length" 
+		 {% if length %}
+		 value="{{length}}"
+		 {% endif %}
+		 >
+	  {% if length_error %}
+	  <span class="help-block">{{length_error}}</span>
+	  {% endif %}
+	</div>
+	<div class="form-group 
+	  {% if pound_error %}
+	  has-error
+	  {% endif %}
+	  ">
+	  <label for="pounds">Pounds:</label>
+	  <input name="pounds" type="number" class="form-control" id="pounds" 
+		 {% if pounds %}
+		 value="{{pounds}}"
+		 {% endif %}
+		 >
+	  {% if pound_error %}
+	  <span class="help-block">{{pound_error}}</span>
+	  {% endif %}
+	</div>
+	<div class="form-group 
+		    {% if ounce_error %}
+		    has-error
+		    {% endif %}
+		    ">
+	  <label for="ounces">Ounces:</label>
+	  <input name="ounces" type="number" class="form-control" id="ounces" 
+		 {% if ounces %}
+		 value="{{ounces}}"
+		 {% endif %}
+		 >
+	  {% if ounce_error %}
+	  <span class="help-block">{{ounce_error}}</span>
+	  {% endif %}
+	</div>
+
+	<button type="submit" class="btn btn-default">Submit</button>
+      </form>
+
+      {% else %}
+      <h1>Want to make a bet?</h1>
+      <p>If you already have an account please sign in. If not, please create an account before proceeding.</p>
+      {% endif %}
+      <script>
+	$(document).ready(function(){
+	var date_input=$('input[name="date"]'); //our date input has the name "date"
+	var container=$('.bootstrap-iso form').length>0 ? $('.bootstrap-iso form').parent() : "body";
+	var options={
+        format: 'mm/dd/yyyy',
+        container: container,
+        todayHighlight: true,
+        autoclose: true,
+	};
+	date_input.datepicker(options);
+	})
+      </script>
+    </div>
+    <div class="col-sm-2 sidenav">
+      <!-- <div class="well"> -->
+      <!-- </div> -->
+    </div>
+  </div>
+</div>
+
+
+
+
+
+<footer class="container-fluid text-center">
+  <p>&copy; 2017 - Eric Ianni</p>
+</footer>
+
+</body>
+</html>
