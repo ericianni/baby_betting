@@ -17,7 +17,7 @@ from sendgrid.helpers import mail
 
 # Globals
 
-SENDGRID_API_KEY = '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'
+SENDGRID_API_KEY = ''
 SENDGRID_SENDER = "Ianni Baby 2.0"
 
 JINJA_ENVIRONMENT = jinja2.Environment(
@@ -325,7 +325,8 @@ User: {} Score: {}
                 to_email = mail.Email(user.email)
                 content = mail.Content('text/plain', body)
                 message = mail.Mail(from_email, subject, to_email, content)
-                response = sg.client.mail.send.post(request_body=message.get())
+                if user.email != ADMIN_EMAIL:
+                    response = sg.client.mail.send.post(request_body=message.get())
                 
     def calc_score(self, user_data, actual_data):
 
