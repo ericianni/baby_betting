@@ -54,7 +54,7 @@
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>                        
       </button>
-      <a class="navbar-brand" href="/">Logo</a>
+      <a class="navbar-brand" href="/">Ianni Baby 2.0</a>
     </div>
     <div class="collapse navbar-collapse" id="myNavbar">
       <ul class="nav navbar-nav">
@@ -67,7 +67,7 @@
 	{% if logged_in %}
         <li><a href="/logout"><span class="glyphicon glyphicon-log-in"></span> Logout</a></li>
 	{% else %}
-	<li><a href="/login"><span class="glyphicon glyphicon-log-in"></span> Login</a></li>
+	<li><a href="/login"><span class="glyphicon glyphicon-log-in"></span> Login / Sign up</a></li>
 	{% endif %}
       </ul>
     </div>
@@ -80,7 +80,7 @@
     </div>
     <div class="col-sm-8 text-left">
       {% if bet_success %}
-      <div class="alert alert-success">
+      <div class="text-center alert alert-success">
 	Bet successfully made!
       </div>
       {% endif %}
@@ -90,6 +90,7 @@
       {% else %}
       <h1>Time to make your bet {{user}}!</h1>
       {% endif %}
+      <h3>Due Date: <u>{{formatted_date}}</u></h3>
       <form role="form" action="/bet" method="post">
 	{% if bet_error %}
 	<div class="alert alert-danger">
@@ -124,8 +125,6 @@
 		 {% if time %}
 		 value="{{time}}"
 		 {% endif %}/>
-	  <!-- <label class="radio-inline"><input type="radio" name="am_pm">AM</label> -->
-	  <!-- <label class="radio-inline"><input type="radio" name="am_pm">PM</label> -->
 	  {% if time_error %}
 	  <span class="help-block">{{time_error}}</span>
 	  {% endif %}
@@ -139,21 +138,21 @@
 	  <label for="gender">Gender:</label>
 	  {% if gender %}
 	  <select id="gender" name="gender" class="form-control">
-	    <option value="1"
-		    {% if gender == "1" %}
+	    <option value="Male"
+		    {% if gender == "Male" %}
 		    selected
 		    {% endif %}
 		    >Male</option>
-	    <option value="2"
-		    {% if gender == "2" %}
+	    <option value="Female"
+		    {% if gender == "Female" %}
 		    selected
 		    {% endif %}
 		    >Female</option>
 	  </select>
 	  {% else %}
 	  <select id="gender" name="gender" class="form-control">
-		  <option value="1">Male</option>
-		  <option value="2">Female</option>
+		  <option value="Male">Male</option>
+		  <option value="Female">Female</option>
 	  </select>
 	  {% endif %}
 	  {% if gender_error %}
@@ -168,33 +167,33 @@
 	  <label for="hair">Hair Color:</label>
 	  {% if hair %}
 	  <select id="hair" name="hair" class="form-control">
-	    <option value="red"
-		    {% if hair == "red" %}
+	    <option value="Red"
+		    {% if hair == "Red" %}
 		    selected
 		    {% endif %}
 		    >Red</option>
-	    <option value="blonde"
-		    {% if hair == "blonde" %}
+	    <option value="Blonde"
+		    {% if hair == "Blonde" %}
 		    selected
 		    {% endif %}
 		    >Blonde</option>
-	    <option value="brown"
-		    {% if hair == "brown" %}
+	    <option value="Brown"
+		    {% if hair == "Brown" %}
 		    selected
 		    {% endif %}
 		    >Brown</option>
-	    <option value="black"
-		    {% if hair == "black" %}
+	    <option value="Black"
+		    {% if hair == "Black" %}
 		    selected
 		    {% endif %}
 		    >Black</option>
 	  </select>
 	  {% else %}
 	  <select id="hair" name="hair" class="form-control">
-	    <option value="red">Red</option>
-	    <option value="blonde">Blonde</option>
-	    <option value="brown">Brown</option>
-	    <option value="black">Black</option>
+	    <option value="Red">Red</option>
+	    <option value="Blonde">Blonde</option>
+	    <option value="Brown">Brown</option>
+	    <option value="Black">Black</option>
 	  </select>
 	  {% endif %}
 	  {% if hair_error %}
@@ -207,7 +206,7 @@
 	  {% endif %}
 	  ">
 	  <label for="length">Length in inches:</label>
-	  <input name="length" type="number" step="0.01" class="form-control" id="length" 
+	  <input name="length" type="number" step="0.25" class="form-control" id="length" 
 		 {% if length %}
 		 value="{{length}}"
 		 {% endif %}
@@ -237,7 +236,7 @@
 		    {% endif %}
 		    ">
 	  <label for="ounces">Ounces:</label>
-	  <input name="ounces" type="number" class="form-control" id="ounces" 
+	  <input name="ounces" type="number" max="16" class="form-control" id="ounces" 
 		 {% if ounces %}
 		 value="{{ounces}}"
 		 {% endif %}

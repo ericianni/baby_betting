@@ -58,7 +58,7 @@
         <li><a href="/">Home</a></li>
         <li><a href="/bet">Make Bet</a></li>
         <li><a href="/results">Bet Results</a></li>
-        <li><a href="/faq">How It Works</a></li>
+        <li class="active"><a href="/faq">How It Works</a></li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
 	{% if logged_in %}
@@ -75,44 +75,24 @@
   <div class="row content">
     <div class="col-sm-2 sidenav">
     </div>
+
     <div class="col-sm-8 text-left">
-      <h1>Login</h1>
-      <form role="form" action="/login" method="post">
-	{% if login_error %}
-	<div class="alert alert-danger">
-	  {{login_error}}
-	</div>
-	{% endif %}
-	<div class="form-group 
-		    {% if email_error %}
-		    has-error
-		    {% endif %}
-		    ">
-	  <label for="email">Email address:</label>
-	  <input name="email" type="email" class="form-control" id="email"
-		 {% if email %}
-		 value="{{email}}"
-		 {% endif %}
-		 >
-	  {% if email_error %}
-	  <span class="help-block">{{email_error}}</span>
-	  {% endif %}
-	</div>
-	<div class="form-group
-		    {% if pwd_error %}
-		    has-error
-		    {% endif %}
-		    ">
-	  <label for="pwd">Password:</label>
-	  <input name="password" type="password" class="form-control" id="pwd">
-	  {% if pwd_error %}
-	  <span class="help-block">{{pwd_error}}</span>
-	  {% endif %}
-	</div>
-	<button type="submit" class="btn btn-default">Submit</button>
-      </form>
-      <h3>Or</h3>
-      <a href="/account">Create Account</a>
+      {% if message %}
+    <div class="text-center alert alert-success">
+      {{message}}
+    </div>
+    {% endif %}
+    <h1>Here's how it works {% if user %} {{user}} {% endif %}</h1>
+      <p>Once you create an account you can make your bet. You are allowed one bet per person and must submit it before {{cut_off_date}}. You are also allowed to update your bet at any time before that date.</p>
+      <h3>Bets are made up of 5 parts:</h3>
+	<ul class="list-group">
+	  <li class="list-group-item">Date/Time - 65 pts</li>
+	  <li class="list-group-item">Gender - 20 pts</li>
+	  <li class="list-group-item">Hair Color - 5 pts</li>
+	  <li class="list-group-item">Length - 5 pts</li>
+	  <li class="list-group-item">Weight - 5 pts</li>
+	</ul>
+
     </div>
     <div class="col-sm-2 sidenav">
       <!-- <div class="well"> -->

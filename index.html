@@ -38,7 +38,11 @@
         padding: 15px;
       }
       .row.content {height:auto;} 
-    }
+}
+
+
+
+
   </style>
 </head>
 <body>
@@ -51,7 +55,7 @@
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>                        
       </button>
-      <a class="navbar-brand" href="/">Logo</a>
+      <a class="navbar-brand" href="/">Ianni Baby 2.0</a>
     </div>
     <div class="collapse navbar-collapse" id="myNavbar">
       <ul class="nav navbar-nav">
@@ -64,7 +68,7 @@
 	{% if logged_in %}
         <li><a href="/logout"><span class="glyphicon glyphicon-log-in"></span> Logout</a></li>
 	{% else %}
-	<li><a href="/login"><span class="glyphicon glyphicon-log-in"></span> Login</a></li>
+	<li><a href="/login"><span class="glyphicon glyphicon-log-in"></span> Login / Sign up</a></li>
 	{% endif %}
       </ul>
     </div>
@@ -75,14 +79,21 @@
   <div class="row content">
     <div class="col-sm-2 sidenav">
     </div>
-    <div class="col-sm-8 text-left"> 
-      <h1>Welcome {% if user %} {{user}} {% endif %}</h1>
-      <p>Welcome to the new season of Baby Ianni Betting. This time
+
+    <div class="col-sm-8 text-left">
+      {% if message %}
+    <div class="text-center alert alert-success">
+      {{message}}
+    </div>
+    {% endif %}
+    <h1>Welcome {% if user %} {{user}} {% endif %}</h1>
+    <p>Welcome to the new season of Baby Ianni Betting. This time
   around we have a custom built system for our enjoyment. Unlike last
   time, we can now bet on the hair color as well. So if you think
   Ianni Baby 2.0 will be another red-headed demon child you can bet on
-  it! For a breakdown of how everything is scored click the "How It
-  Works" link up above.</p>
+  it! For a breakdown of how everything is scored click the <a href="/faq">"How It
+    Works"</a> link up above.</p>
+    <p>All bets come with an <b>$10 obligation</b>.</p>
     </div>
     <div class="col-sm-2 sidenav">
       <!-- <div class="well"> -->

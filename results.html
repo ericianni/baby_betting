@@ -57,7 +57,7 @@
       <ul class="nav navbar-nav">
         <li><a href="/">Home</a></li>
         <li><a href="/bet">Make Bet</a></li>
-        <li><a href="/results">Bet Results</a></li>
+        <li class="active"><a href="/results">Bet Results</a></li>
         <li><a href="/faq">How It Works</a></li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
@@ -75,44 +75,59 @@
   <div class="row content">
     <div class="col-sm-2 sidenav">
     </div>
+
     <div class="col-sm-8 text-left">
-      <h1>Login</h1>
-      <form role="form" action="/login" method="post">
-	{% if login_error %}
-	<div class="alert alert-danger">
-	  {{login_error}}
-	</div>
-	{% endif %}
-	<div class="form-group 
-		    {% if email_error %}
-		    has-error
-		    {% endif %}
-		    ">
-	  <label for="email">Email address:</label>
-	  <input name="email" type="email" class="form-control" id="email"
-		 {% if email %}
-		 value="{{email}}"
-		 {% endif %}
-		 >
-	  {% if email_error %}
-	  <span class="help-block">{{email_error}}</span>
+      {% if message %}
+    <div class="text-center alert alert-success">
+      {{message}}
+    </div>
+    {% endif %}
+    <h1>Welcome {% if user %} {{user}} {% endif %}</h1>
+    <h3> Let's see how you did!</h3>
+    <div class="table-responsive">          
+      <table class="table table-striped">
+	<thead>
+	  <tr>
+	    <th>Place</th>
+	    <th>Name</th>
+	    <th>Date/Time</th>
+	    <th>Gender</th>
+	    <th>Hair</th>
+	    <th>Length</th>
+	    <th>Weight</th>
+	    <th>Total</th>
+	  </tr>
+	  </thead>
+	<tbody>
+	  {% set counter = 1 %}
+	  {% for result in results %}
+	  {% if result['user'].email != 'admin@admin.com' %}
+	  <tr {% if counter == 1 %} class="success" {% endif %}>
+	    <td>{{counter}}</td>
+	    <td>{{result['user'].name}}</td>
+	    <td>{{result['user'].date}}</td>
+	    <td>{{result['user'].gender}}</td>
+	    <td>{{result['user'].hair_color}}</td>
+	    <td>{{result['user'].length}}</td>
+	    <td>{{result['user'].pounds}} lbs {{result['user'].ounces}} oz</td>
+	    <td></td>
+	  </tr>
+	  <tr>
+	    <td></td>
+	    <td></td>
+	    <td>{{result['date']}} pts</td>
+	    <td>{{result['gender']}} pts</td>
+	    <td>{{result['hair']}} pts</td>
+	    <td>{{result['length']}} pts</td>
+	    <td>{{result['weight']}} pts</td>
+	    <td  {% if counter == 1 %} class="success" {% endif %}>{{result['total']}} pts</td>
+	  </tr>
+	  {% set counter = counter + 1 %}
 	  {% endif %}
-	</div>
-	<div class="form-group
-		    {% if pwd_error %}
-		    has-error
-		    {% endif %}
-		    ">
-	  <label for="pwd">Password:</label>
-	  <input name="password" type="password" class="form-control" id="pwd">
-	  {% if pwd_error %}
-	  <span class="help-block">{{pwd_error}}</span>
-	  {% endif %}
-	</div>
-	<button type="submit" class="btn btn-default">Submit</button>
-      </form>
-      <h3>Or</h3>
-      <a href="/account">Create Account</a>
+	  {% endfor %}
+	</tbody>
+      </table>
+    </div>
     </div>
     <div class="col-sm-2 sidenav">
       <!-- <div class="well"> -->

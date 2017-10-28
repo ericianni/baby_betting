@@ -1,5 +1,9 @@
 from google.appengine.ext import ndb
 from gaesessions import get_current_session
+#from google.appengine.api import mail
+from google.appengine.api import app_identity
+from google.appengine.ext import vendor
+vendor.add('lib')
 import os
 import webapp2
 import jinja2
@@ -7,8 +11,14 @@ import urllib
 import json
 import datetime
 import hashlib
+import logging
+import sendgrid
+from sendgrid.helpers import mail
 
 # Globals
+
+SENDGRID_API_KEY = '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'
+SENDGRID_SENDER = "Ianni Baby 2.0"
 
 JINJA_ENVIRONMENT = jinja2.Environment(
     loader=jinja2.FileSystemLoader(os.path.dirname(__file__)),
@@ -38,6 +48,7 @@ class MainPage(webapp2.RequestHandler):
         # Session Handling
         session = get_current_session()
         user = session.get('user', None)
+        message = session.get('message', None)
         
         template = JINJA_ENVIRONMENT.get_template('index.html')
         title = "Ianni Baby 2.0"
@@ -48,16 +59,34 @@ class MainPage(webapp2.RequestHandler):
         template_values = {
             'user':user,
             'title':title,
-            'logged_in':logged_in
+            'logged_in':logged_in,
+            'message':message,
         }
+        if session.has_key('message'):
+            del session['message']
         self.response.write(template.render(template_values))
 
 class BetHandler(webapp2.RequestHandler):
     def get(self):
+        today = datetime.datetime.today()
+        
         # Session Handling
         session = get_current_session()
+
         user = session.get('user', None)
         email = session.get('user_email', None)
+
+        admin_query = User.query(User.email==ADMIN_EMAIL)
+
+        if admin_query.count() == 1:
+            if admin_query.get().date != None and email != ADMIN_EMAIL:
+                session['message'] = "Sorry, the books are closed"
+                self.redirect('/')
+        if today > datetime.datetime.strptime(CUT_OFF_DATE, '%Y-%m-%d') and email != ADMIN_EMAIL:
+            session['message'] = "Sorry, the books are closed"
+            self.redirect('/')
+            
+
         bet_error = session.get('bet_error', None)
         bet_success = session.get('bet_success', None)
         new_bet = session.get('new_bet', None)
@@ -99,8 +128,11 @@ class BetHandler(webapp2.RequestHandler):
             logged_in = False
             has_prev_bet = False
 
+
+        formatted_date = datetime.datetime.strptime(DUE_DATE, '%Y-%m-%d').strftime('%m/%d/%Y')
         template_values = {
             'due_date':DUE_DATE,
+            'formatted_date':formatted_date,
             'user':user,
             'title':title,
             'logged_in':logged_in,
@@ -230,42 +262,99 @@ class BetHandler(webapp2.RequestHandler):
                 cur_user.pounds = int(pounds)
                 cur_user.ounces = int(ounces)
                 cur_user.put()
+
+                if cur_user.email == ADMIN_EMAIL:
+                    self.send_results()
+                else:
+                    self.send_email(cur_user)
+
                 session['bet_success'] = True
                 session['new_bet'] = cur_user
                 
                 self.redirect('/bet')
-            
+    def send_email(self, user):
 
-class ResultHandler(webapp2.RequestHandler):
-    def get(self):
-        admin_query = User.query(User.email==ADMIN_EMAIL)
-        if admin_query.count() > 0:
-            self.response.write("Admin exists")
-        else:
-            self.response.write("Admin DOES NOT exist")
+        sg = sendgrid.SendGridAPIClient(apikey=SENDGRID_API_KEY)
+        from_email = mail.Email("ebianni@gmail.com")
+        to_email = mail.Email("ebianni@gmail.com")
+        # sender = "ebianni@gmail.com"
+        subject = user.name + " has made a bet"
+        body = """There is a new bet by {}!
 
-    def calc_score(self, user_date, actual_data):
-        date_multiplier = 65
-        gender_multiplier = 20
-        hair_multiplier = 5
-        length_multiplier = 5
-        weight_multiplier = 5
+
+
+Date/Time: {} {}
+Gender: {}
+Hair Color: {}
+Length: {}"
+Weight: {} lbs {} oz""".format(user.name, user.date, user.time, user.gender, user.hair_color, user.length, user.pounds, user.ounces)
+
+        content = mail.Content('text/plain', body)
+        message = mail.Mail(from_email, subject, to_email, content)
+        response = sg.client.mail.send.post(request_body=message.get())
+        
+
+
+    def send_results(self):
+        user_query = User.query()
+        sg = sendgrid.SendGridAPIClient(apikey=SENDGRID_API_KEY)
+        from_email = mail.Email("ebianni@gmail.com")
+        subject = "The baby has landed"
+        body = """Ianni Baby 2.0 has Arrived!
+
+Let's see how you did in the betting pool """
+        admin = User.query(User.email==ADMIN_EMAIL).get()
+        if user_query.count() > 0 and admin:
+            results = []
+            for user in user_query:
+                result = self.calc_score(user, admin)
+                results.append(result)
+            results = sorted(results, key=lambda k: k['total'], reverse=True) 
+            for result in results:
+                body += """
+
+User: {} Score: {}
+
+""".format(result['user'].name, result['total'])
+
+            body += """
+
+        See full results at http://ianni-baby-2.appspot.com/results."""
+
+            for user in user_query:
+                to_email = mail.Email(user.email)
+                content = mail.Content('text/plain', body)
+                message = mail.Mail(from_email, subject, to_email, content)
+                response = sg.client.mail.send.post(request_body=message.get())
+                
+    def calc_score(self, user_data, actual_data):
+
+        date_multiplier = 65.0
+        gender_multiplier = 20.0
+        hair_multiplier = 5.0
+        length_multiplier = 5.0
+        weight_multiplier = 5.0
+        total = 0
         # Break score down by section
         results = {}
+        results['user'] = user_data
         # Date + Time = 65
-        days_off = get_day_diff(user_data.date, user_data.time, actual_data.date, actual_data.time)
+        days_off = self.get_day_diff(user_data.date, user_data.time, actual_data.date, actual_data.time)
         if days_off > 14:
             results['date'] = 0.0
         else:
-            results['date'] = (1.0 - days_off / 14.0) * date_multiplier 
+            results['date'] = round((1.0 - days_off / 14.0) * date_multiplier, 1)
+            total += results['date']
         # Gender = 25
         if user_data.gender == actual_data.gender:
             results['gender'] = gender_multiplier
+            total += results['gender']
         else:
             results['gender'] = 0.0
         # Hair = 5
         if user_data.hair_color == actual_data.hair_color:
             results['hair'] = hair_multiplier
+            total += results['hair']
         else:
             results['hair'] = 0.0
         # Length = 5
@@ -273,13 +362,16 @@ class ResultHandler(webapp2.RequestHandler):
         if length_off > 3.0:
             results['length'] = 0.0
         else:
-            resutls['length'] = (1.0 - length_off / 3.0) * length_multipler
+            results['length'] = round((1.0 - length_off / 3.0) * length_multiplier, 1)
+            total += results['length']
         # Weight = 5
-        weight_off = get_weight_diff(user_data.pounds, user_data.ounces, actual_data.pounds, actual_data.ounces)
+        weight_off = self.get_weight_diff(user_data.pounds, user_data.ounces, actual_data.pounds, actual_data.ounces)
         if weight_off > 48.0:
             results['weight'] = 0.0
         else:
-            resutls['weight'] = (1.0 - weight_off / 3.0) * weight_multipler
+            results['weight'] = round((1.0 - weight_off / 48.0) * weight_multiplier, 1)
+            total += results['weight']
+        results['total'] = round(total, 1)
         return results
 
     def get_day_diff(self, date0, time0, date1, time1):
@@ -292,8 +384,110 @@ class ResultHandler(webapp2.RequestHandler):
         return abs(day0 - day1).days + abs(partial_day0 - partial_day1)
 
     def get_weight_diff(self, pounds0, ounces0, pounds1, ounces1):
-        weight0 = pounds0 * 16 + ounces
-        weight1 = pounds1 * 16 + ounces
+        weight0 = pounds0 * 16 + ounces0
+        weight1 = pounds1 * 16 + ounces1
+        return abs(weight0 - weight1)
+    
+class ResultHandler(webapp2.RequestHandler):
+    def get(self):
+        session = get_current_session()
+        
+        admin_query = User.query(User.email==ADMIN_EMAIL)
+        if admin_query.count() == 1:
+            admin_data = admin_query.get()
+            if not admin_data.date:
+                session['message'] = "The baby hasn't been born yet!"
+                self.redirect('/')
+            else:
+                template = JINJA_ENVIRONMENT.get_template('results.html')
+                title = "Ianni Baby 2.0 - Results"
+                user = session.get('user', None)
+                message = session.get('message', None)
+
+                results = []
+                all_query = User.query()
+                if all_query.count() > 0:
+                    for user_data in all_query:
+                        results.append(self.calc_score(user_data, admin_data))
+                    results = sorted(results, key=lambda k: k['total'], reverse=True) 
+                
+                if user:
+                    logged_in = True
+                else:
+                    logged_in = False
+                template_values = {
+                    'user':user,
+                    'title':title,
+                    'logged_in':logged_in,
+                    'message':message,
+                    'results':results,
+                }
+                if session.has_key('message'):
+                    del session['message']
+                self.response.write(template.render(template_values))
+
+        else:
+            self.response.write("There is an issue with the Admin account")
+
+    def calc_score(self, user_data, actual_data):
+
+        date_multiplier = 65.0
+        gender_multiplier = 20.0
+        hair_multiplier = 5.0
+        length_multiplier = 5.0
+        weight_multiplier = 5.0
+        total = 0
+        # Break score down by section
+        results = {}
+        results['user'] = user_data
+        # Date + Time = 65
+        days_off = self.get_day_diff(user_data.date, user_data.time, actual_data.date, actual_data.time)
+        if days_off > 14:
+            results['date'] = 0.0
+        else:
+            results['date'] = round((1.0 - days_off / 14.0) * date_multiplier, 1)
+            total += results['date']
+        # Gender = 25
+        if user_data.gender == actual_data.gender:
+            results['gender'] = gender_multiplier
+            total += results['gender']
+        else:
+            results['gender'] = 0.0
+        # Hair = 5
+        if user_data.hair_color == actual_data.hair_color:
+            results['hair'] = hair_multiplier
+            total += results['hair']
+        else:
+            results['hair'] = 0.0
+        # Length = 5
+        length_off = abs(user_data.length - actual_data.length)
+        if length_off > 3.0:
+            results['length'] = 0.0
+        else:
+            results['length'] = round((1.0 - length_off / 3.0) * length_multiplier, 1)
+            total += results['length']
+        # Weight = 5
+        weight_off = self.get_weight_diff(user_data.pounds, user_data.ounces, actual_data.pounds, actual_data.ounces)
+        if weight_off > 48.0:
+            results['weight'] = 0.0
+        else:
+            results['weight'] = round((1.0 - weight_off / 48.0) * weight_multiplier, 1)
+            total += results['weight']
+        results['total'] = round(total, 1)
+        return results
+
+    def get_day_diff(self, date0, time0, date1, time1):
+        day0 = datetime.datetime.strptime(date0, '%Y-%m-%d')
+        day1 = datetime.datetime.strptime(date1, '%Y-%m-%d')
+        h0, m0 = time0.split(':')
+        partial_day0 = (int(h0) * 60 + int(m0)) / 1440.0
+        h1, m1 = time0.split(':')
+        partial_day1 = (int(h1) * 60 + int(m1)) / 1440.0
+        return abs(day0 - day1).days + abs(partial_day0 - partial_day1)
+
+    def get_weight_diff(self, pounds0, ounces0, pounds1, ounces1):
+        weight0 = pounds0 * 16 + ounces0
+        weight1 = pounds1 * 16 + ounces1
         return abs(weight0 - weight1)
 
 class FAQHandler(webapp2.RequestHandler):
@@ -451,6 +645,9 @@ class AccountHandler(webapp2.RequestHandler):
                             email=email,
                             password=password)
             new_user.put()
+
+            self.send_email(new_user)
+            
             if session.has_key('name_error'):
                 del session['name_error']
             if session.has_key('email_error'):
@@ -464,6 +661,44 @@ class AccountHandler(webapp2.RequestHandler):
             if session.has_key('email'):
                 del session['email']
             self.redirect('/login')
+
+    def send_email(self, new_user):
+        sg = sendgrid.SendGridAPIClient(apikey=SENDGRID_API_KEY)
+        from_email = mail.Email("ebianni@gmail.com")
+        subject = "New Baby Bet User"
+        to_email = mail.Email("ebianni@gmail.com")
+        body = """There is a new user for Ianni Baby 2.0 Betting Service!
+
+Name: {}
+Email: {}""".format(new_user.name, new_user.email)
+
+        content = mail.Content('text/plain', body)
+        message = mail.Mail(from_email, subject, to_email, content)
+        response = sg.client.mail.send.post(request_body=message.get())
+
+class FAQHandler(webapp2.RequestHandler):
+    def get(self):
+        # Session Handling
+        session = get_current_session()
+        user = session.get('user', None)
+        message = session.get('message', None)
+        
+        template = JINJA_ENVIRONMENT.get_template('faq.html')
+        title = "Ianni Baby 2.0 - How It Works"
+        if user:
+            logged_in = True
+        else:
+            logged_in = False
+        template_values = {
+            'user':user,
+            'title':title,
+            'logged_in':logged_in,
+            'message':message,
+            'cut_off_date':CUT_OFF_DATE,
+        }
+        if session.has_key('message'):
+            del session['message']
+        self.response.write(template.render(template_values))
 
             
 allowed_methods = webapp2.WSGIApplication.allowed_methods
