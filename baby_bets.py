@@ -1,4 +1,4 @@
-from google.appengine.ext import ndb
+vfrom google.appengine.ext import ndb
 from gaesessions import get_current_session
 #from google.appengine.api import mail
 from google.appengine.api import app_identity
@@ -26,7 +26,7 @@ JINJA_ENVIRONMENT = jinja2.Environment(
     autoescape=True)
 
 DUE_DATE = "2017-11-19"
-CUT_OFF_DATE = "2017-11-01"
+CUT_OFF_DATE = "2017-11-06"
 BASE_URL = "https://Ianni-baby-2.appspot.com"
 ADMIN_EMAIL = "admin@admin.com"
 
@@ -61,6 +61,7 @@ class MainPage(webapp2.RequestHandler):
             'title':title,
             'logged_in':logged_in,
             'message':message,
+            'cut_off_date':CUT_OFF_DATE,
         }
         if session.has_key('message'):
             del session['message']
@@ -129,10 +130,12 @@ class BetHandler(webapp2.RequestHandler):
             has_prev_bet = False
 
 
-        formatted_date = datetime.datetime.strptime(DUE_DATE, '%Y-%m-%d').strftime('%m/%d/%Y')
+        formatted_due_date = datetime.datetime.strptime(DUE_DATE, '%Y-%m-%d').strftime('%m/%d/%Y')
+        formatted_cut_off_date = datetime.datetime.strptime(CUT_OFF_DATE, '%Y-%m-%d').strftime('%m/%d/%Y')
         template_values = {
             'due_date':DUE_DATE,
-            'formatted_date':formatted_date,
+            'cut_off_date':formatted_cut_off_date,
+            'formatted_due_date':formatted_due_date,
             'user':user,
             'title':title,
             'logged_in':logged_in,
@@ -307,8 +310,9 @@ Let's see how you did in the betting pool """
         if user_query.count() > 0 and admin:
             results = []
             for user in user_query:
-                result = self.calc_score(user, admin)
-                results.append(result)
+                if user.date and user.email != ADMIN_EMAIL:
+                    result = self.calc_score(user, admin)
+                    results.append(result)
             results = sorted(results, key=lambda k: k['total'], reverse=True) 
             for result in results:
                 body += """

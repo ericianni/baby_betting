@@ -62,7 +62,7 @@
         <li class="active"><a href="/">Home</a></li>
         <li><a href="/bet">Make Bet</a></li>
         <li><a href="/results">Bet Results</a></li>
-        <li><a href="/faq">How It Works</a></li>
+	<li><a href="/faq">How It Works</a></li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
 	{% if logged_in %}
@@ -77,7 +77,14 @@
   
 <div class="container-fluid text-center">    
   <div class="row content">
-    <div class="col-sm-2 sidenav">
+  <div class="col-sm-2 sidenav">
+    <h4>Made a Bet?</h4>
+    <form action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_top">
+    <input type="hidden" name="cmd" value="_s-xclick">
+    <input type="hidden" name="hosted_button_id" value="ELGDJ35ZM7JZC">
+    <input type="image" src="https://www.paypalobjects.com/en_US/i/btn/btn_paynow_LG.gif" border="0" name="submit" alt="PayPal - The safer, easier way to pay online!">
+    <img alt="" border="0" src="https://www.paypalobjects.com/en_US/i/scr/pixel.gif" width="1" height="1">
+    </form>
     </div>
 
     <div class="col-sm-8 text-left">
@@ -93,7 +100,8 @@
   Ianni Baby 2.0 will be another red-headed demon child you can bet on
   it! For a breakdown of how everything is scored click the <a href="/faq">"How It
     Works"</a> link up above.</p>
-    <p>All bets come with an <b>$10 obligation</b>.</p>
+      <p>All bets come with an <b>$10 obligation</b>.</p>
+      <p>All bets must be submitted <b>BEFORE</b> {{cut_off_date}}.
     </div>
     <div class="col-sm-2 sidenav">
       <!-- <div class="well"> -->
