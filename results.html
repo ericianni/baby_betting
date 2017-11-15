@@ -82,15 +82,44 @@
     <img alt="" border="0" src="https://www.paypalobjects.com/en_US/i/scr/pixel.gif" width="1" height="1">
     </form>
     </div>
-
     <div class="col-sm-8 text-left">
       {% if message %}
     <div class="text-center alert alert-success">
       {{message}}
     </div>
     {% endif %}
+    {% if all_users %}
+     <h1>Welcome {% if user %} {{user}} {% endif %}</h1>
+    <h3>Compare your bet to the rest!</h3>
+    <div class="table-responsive">          
+      <table class="table table-striped">
+	<thead>
+	  <tr>
+	    <th>Name</th>
+	    <th>Date/Time</th>
+	    <th>Gender</th>
+	    <th>Hair</th>
+	    <th>Length</th>
+	    <th>Weight</th>
+	  </tr>
+	  </thead>
+	<tbody>
+	  {% for each in all_users %}
+	  {% if each.email != 'admin@admin.com' and each.date %}
+	  <tr {% if each.name == user %} class="success" {% endif %}>
+	    <td>{{each.name}}</td>
+	    <td>{{each.date}}</td>
+	    <td>{{each.gender}}</td>
+	    <td>{{each.hair_color}}</td>
+	    <td>{{each.length}}</td>
+	    <td>{{each.pounds}} lbs {{each.ounces}} oz</td>
+	  </tr>
+	  {% endif %}
+	  {% endfor %}
+    {% endif %}
+    {% if results %}    
     <h1>Welcome {% if user %} {{user}} {% endif %}</h1>
-    <h3> Let's see how you did!</h3>
+    <h3>Let's see how you did!</h3>
     <div class="table-responsive">          
       <table class="table table-striped">
 	<thead>
@@ -132,6 +161,7 @@
 	  {% set counter = counter + 1 %}
 	  {% endif %}
 	  {% endfor %}
+	  {% endif %}
 	</tbody>
       </table>
     </div>

@@ -401,8 +401,36 @@ class ResultHandler(webapp2.RequestHandler):
         if admin_query.count() == 1:
             admin_data = admin_query.get()
             if not admin_data.date:
-                session['message'] = "The baby hasn't been born yet!"
-                self.redirect('/')
+                all_users = []
+                user_query = User.query()
+                if user_query.count > 0:
+
+                    for user_data in user_query:
+                        all_users.append(user_data.to_dict())
+                    all_users = sorted(all_users, key=lambda k: k['date'])
+
+                template = JINJA_ENVIRONMENT.get_template('results.html')
+                title = "Ianni Baby 2.0 - Results"
+                user = session.get('user', None)
+                message = session.get('message', None)
+                    
+                if user:
+                    logged_in = True
+                else:
+                    logged_in = False
+                template_values = {
+                    'user':user,
+                    'title':title,
+                    'logged_in':logged_in,
+                    'message':message,
+                    'all_users':all_users,
+                }
+                if session.has_key('message'):
+                    del session['message']
+                self.response.write(template.render(template_values))
+                
+                # session['message'] = "The baby hasn't been born yet!"
+                # self.redirect('/')
             else:
                 template = JINJA_ENVIRONMENT.get_template('results.html')
                 title = "Ianni Baby 2.0 - Results"
