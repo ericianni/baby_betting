@@ -1,4 +1,4 @@
-vfrom google.appengine.ext import ndb
+from google.appengine.ext import ndb
 from gaesessions import get_current_session
 #from google.appengine.api import mail
 from google.appengine.api import app_identity
@@ -26,7 +26,7 @@ JINJA_ENVIRONMENT = jinja2.Environment(
     autoescape=True)
 
 DUE_DATE = "2017-11-19"
-CUT_OFF_DATE = "2017-11-06"
+CUT_OFF_DATE = "2017-11-09"
 BASE_URL = "https://Ianni-baby-2.appspot.com"
 ADMIN_EMAIL = "admin@admin.com"
 
@@ -69,7 +69,7 @@ class MainPage(webapp2.RequestHandler):
 
 class BetHandler(webapp2.RequestHandler):
     def get(self):
-        today = datetime.datetime.today()
+        today = datetime.datetime.now()
         
         # Session Handling
         session = get_current_session()
